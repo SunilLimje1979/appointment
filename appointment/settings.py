@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-n@_us%@ddz*p&i%xk(oc(kw9p=lq+sz-=mm!i9q+62w0lpqtmb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*","localhost","localhost:5432","0.0.0.0:8000","13.200.169.170","13.200.169.170:8000"]
 
 
 # Application definition
@@ -78,15 +78,12 @@ WSGI_APPLICATION = 'appointment.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'db_gyaagl_vocabuli_medicify',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'USER': 'postgres',
+        'PASSWORD': 'Medicify@2024',
+        'HOST': '13.200.169.170',
+        'PORT': '5432',
     }
 }
 
