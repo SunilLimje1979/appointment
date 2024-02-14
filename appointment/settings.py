@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-n@_us%@ddz*p&i%xk(oc(kw9p=lq+sz-=mm!i9q+62w0lpqtmb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*","localhost","localhost:5432","0.0.0.0:8000","13.200.169.170","13.200.169.170:8000"]
+ALLOWED_HOSTS = ["*","localhost","localhost:5432","0.0.0.0:8000","13.233.211.102","13.233.211.102:8000"]
 
 
 # Application definition
@@ -82,7 +82,7 @@ DATABASES = {
         'NAME': 'db_gyaagl_vocabuli_medicify',
         'USER': 'postgres',
         'PASSWORD': 'Medicify@2024',
-        'HOST': '13.200.169.170',
+        'HOST': '13.233.211.102',
         'PORT': '5432',
     }
 }
