@@ -22,9 +22,4 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("api/", include("appointmentapp.urls")),
-]
-
-# Serve static files during development
-# Serve static files during development
-if settings.DEBUG:
-    urlpatterns += static('/appointment/static/', document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
