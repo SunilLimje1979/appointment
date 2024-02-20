@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.http import Http404
 from medicify_project.models import * 
 from medicify_project.serializers import *
+from django.db import connection
 
 # Create your views here.
 
@@ -164,30 +165,28 @@ def cancel_appointment(request):
 @api_view(['POST'])
 @transaction.atomic
 def insert_appointment_data(request):
-    response_data = {
-        'message_code': 999,
-        'message_text': 'Functional part is commented.',
-        'message_data': {},
-        'message_debug': ""
-    }
+    
+    debug = ""
+    res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
+     
 
     # Validations for required fields
-    required_fields = ['Doctor_Id', 'Appointment_DateTime', 'Appointment_Name', 'Appointment_MobileNo', 'Appointment_Gender']
+    required_fields = ['doctor_id', 'appointment_datetime', 'appointment_name', 'appointment_mobileno', 'appointment_gender']
     missing_fields = [field for field in required_fields if not request.data.get(field)]
 
     if missing_fields:
-        response_data['message_code'] = 999
-        response_data['message_text'] = 'Failure'
-        response_data['message_data'] = {f"Missing required fields: {', '.join(missing_fields)}"}
+        res['message_code'] = 999
+        res['message_text'] = 'Failure'
+        res['message_data'] = {f"Missing required fields: {', '.join(missing_fields)}"}
 
     else:
         try:
             # Convert the provided date and time to epoch time
-            epoch_time = int(datetime.strptime(request.data.get('Appointment_DateTime'), '%Y-%m-%d %H:%M:%S').timestamp())
+            epoch_time = int(datetime.strptime(request.data.get('appointment_datetime'), '%Y-%m-%d %H:%M:%S').timestamp())
 
             # Get the maximum appointment token from the database
             max_appointment_token = Tbldoctorappointments.objects.filter(
-                doctor_id=request.data.get('Doctor_Id'),
+                doctor_id=request.data.get("doctor_id"),
                 appointment_datetime=epoch_time
             ).aggregate(max_token=models.Max('appointment_token'))['max_token']
 
@@ -196,33 +195,52 @@ def insert_appointment_data(request):
 
             # Map gender to 0 for male and 1 for female
             gender_mapping = {'Male': 0, 'Female': 1}
-            appointment_gender = gender_mapping.get(request.data.get('Appointment_Gender'), None)
+            appointment_gender = gender_mapping.get(request.data.get('appointment_gender'), None)
 
             if appointment_gender is None:
-                response_data['message_code'] = 999
-                response_data['message_text'] = 'Failure'
-                response_data['message_data'] = {'Invalid gender value'}
+                res['message_code'] = 999
+                res['message_text'] = 'Failure'
+                res['message_data'] = {'Invalid gender value'}
             else:
-                # Create a new appointment instance using the ORM model
-                new_appointment = Tbldoctorappointments(
-                    doctor_id=request.data.get('Doctor_Id'),
-                    appointment_datetime=epoch_time,
-                    appointment_name=request.data.get('Appointment_Name'),
-                    appointment_mobileno=request.data.get('Appointment_MobileNo'),
-                    appointment_gender=appointment_gender,
-                    appointment_token=appointment_token,
-                    appointment_status=1,
-                    isdeleted=0
-                )
+                
+                
+                data = request.data
+                data['appointment_gender'] = appointment_gender
+                data['appointment_token'] = appointment_token
+                data['appointment_status'] = 1
+                data['appointment_datetime'] = epoch_time
+                
+                data['isdeleted'] = 0
+                data['consultation_id'] = 1
 
-                # Save the new appointment instance
-                new_appointment.save()
+                serializer = TbldoctorappointmentsSerializer(data=data)
 
-                response_data['message_code'] = 1000
-                response_data['message_text'] = 'Data inserted successfully'
+                if serializer.is_valid():
+                    instance = serializer.save()
+
+                    last_inserted_id = instance.appointment_id
+
+                    # last_query = connection.queries[-1]['sql']
+                    # print("Last Executed Query:", last_query)
+
+                    res = {
+                        'message_code': 1000,
+                        'message_text': 'Success',
+                        'message_data': {'appointment_id': str(last_inserted_id)},
+                        'message_debug': debug if debug else []
+                    }
+                else:
+                    res = {
+                        'message_code': 2000,
+                        'message_text': 'Validation Error',
+                        'message_errors': serializer.errors
+                    }
+
+        except Tbldoctorappointments.DoesNotExist:
+            res = {'message_code': 999, 'message_text': 'doctorappointments not found'}
 
         except Exception as e:
-            response_data['message_code'] = 500
-            response_data['message_text'] = f'Error: {str(e)}'
+            res = {'message_code': 999, 'message_text': f'Error: {str(e)}'}
 
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response(res, status=status.HTTP_200_OK)
+
