@@ -29,8 +29,8 @@ def get_doctor_appointments(request):
         'message_debug': ""
     }
 
-    doctor_id = request.GET.get('Doctor_Id', '')
-    appointment_date_time = request.GET.get('Appointment_DateTime', '')
+    doctor_id = request.data.get('Doctor_Id', '')
+    appointment_date_time = request.data.get('Appointment_DateTime', '')
 
     if not doctor_id:
         response_data = {'message_code': 999, 'message_text': 'Doctor id is required.'}
@@ -53,7 +53,7 @@ def get_doctor_appointments(request):
             # Serialize the data
             serializer = TbldoctorappointmentsSerializer(appointments, many=True)
             result = serializer.data
-
+            
             if result:
                 response_data = {
                     'message_code': 1000,
@@ -165,7 +165,7 @@ def cancel_appointment(request):
 @api_view(['POST'])
 @transaction.atomic
 def insert_appointment_data(request):
-    
+   
     debug = ""
     res = {'message_code': 999, 'message_text': 'Functional part is commented.', 'message_data': [], 'message_debug': debug}
      
@@ -211,7 +211,7 @@ def insert_appointment_data(request):
                 data['appointment_datetime'] = epoch_time
                 
                 data['isdeleted'] = 0
-                data['consultation_id'] = 1
+                data['consultation_id'] = request.data.get('consultation_id')
 
                 serializer = TbldoctorappointmentsSerializer(data=data)
 
