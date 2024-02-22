@@ -8,5 +8,6 @@ urlpatterns = [
     path("update_appointment_status",update_appointment_status),
     path("cancel_appointment/",cancel_appointment),
     path("insert_appointment_data/",insert_appointment_data),
+    path('get_patient_by_appointment_id/',get_patient_by_appointment_id),
    
 ]

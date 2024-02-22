@@ -244,3 +244,35 @@ def insert_appointment_data(request):
 
     return Response(res, status=status.HTTP_200_OK)
 
+@api_view(["POST"])
+def get_patient_by_appointment_id(request):
+        debug = []
+        response_data = {
+            'message_code': 999,
+            'message_text': 'Functional part is commented.',
+            'message_data': [],
+            'message_debug': debug
+        }
+        appointment_id = request.data.get('appointment_id', None)
+
+        if not appointment_id:
+            response_data={'message_code': 999, 'message_text': 'appointment Id is required.'}
+        
+        else:
+            try:
+                # Get the patient complaint instance
+                appointment = Tbldoctorappointments.objects.get(appointment_id=appointment_id)
+                serializer = TbldoctorappointmentsSerializer(appointment)
+                result = serializer.data
+                    
+                response_data = {
+                        'message_code': 1000,
+                        'message_text': 'Appointment details are fetched successfully',
+                        'message_data': {'appointment details': result},
+                        'message_debug': debug
+                    }
+
+            except Tbldoctorappointments.DoesNotExist:
+                response_data = {'message_code': 999, 'message_text': 'Patient appointment not found.','message_debug': debug}
+
+        return Response(response_data, status=status.HTTP_200_OK)
