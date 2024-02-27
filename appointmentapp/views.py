@@ -212,6 +212,7 @@ def insert_appointment_data(request):
                 
                 data['isdeleted'] = 0
                 data['consultation_id'] = request.data.get('consultation_id')
+                data['age'] = request.data.get('age')
 
                 serializer = TbldoctorappointmentsSerializer(data=data)
 
