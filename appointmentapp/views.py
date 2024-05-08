@@ -183,6 +183,7 @@ def insert_appointment_data(request):
         try:
             # Convert the provided date and time to epoch time
             epoch_time = int(datetime.strptime(request.data.get('appointment_datetime'), '%Y-%m-%d %H:%M:%S').timestamp())
+            current_datetime = datetime.now()
 
             # Get the maximum appointment token from the database
             max_appointment_token = Tbldoctorappointments.objects.filter(
@@ -209,10 +210,12 @@ def insert_appointment_data(request):
                 data['appointment_token'] = appointment_token
                 data['appointment_status'] = 1
                 data['appointment_datetime'] = epoch_time
+                 
                 
                 data['isdeleted'] = 0
                 data['consultation_id'] = request.data.get('consultation_id')
                 data['age'] = request.data.get('age')
+                data['createdon']=int(current_datetime.timestamp())
 
                 serializer = TbldoctorappointmentsSerializer(data=data)
 
