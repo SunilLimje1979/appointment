@@ -280,3 +280,41 @@ def get_patient_by_appointment_id(request):
                 response_data = {'message_code': 999, 'message_text': 'Patient appointment not found.','message_debug': debug}
 
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def update_appointment_by_id(request):
+    debug = []
+    response_data = {
+        'message_code': 999,
+        'message_text': 'Functional part is commented.',
+        'message_data': [],
+        'message_debug': debug
+    }
+    
+    appointment_id = request.data.get('appointment_id', None)
+
+    if not appointment_id:
+        response_data['message_text'] = 'Appointment ID is required.'
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    try:
+        # Get the appointment instance
+        appointment = Tbldoctorappointments.objects.get(appointment_id=appointment_id)
+    except Tbldoctorappointments.DoesNotExist:
+        response_data['message_text'] = 'Appointment not found.'
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    # Serialize the data
+    serializer = TbldoctorappointmentsSerializer(appointment, data=request.data, partial=True)
+    
+    if serializer.is_valid():
+        serializer.save()
+        response_data['message_code'] = 1000
+        response_data['message_text'] = 'Appointment details updated successfully'
+        response_data['message_data'] = {'appointment_details': serializer.data}
+    else:
+        response_data['message_text'] = 'Invalid data provided.'
+        response_data['message_data'] = serializer.errors
+
+    return Response(response_data, status=status.HTTP_200_OK)
